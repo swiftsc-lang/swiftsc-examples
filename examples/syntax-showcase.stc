@@ -1,0 +1,134 @@
+// SwiftSec Syntax Showcase
+// This file demonstrates the comprehensive syntax of the language.
+// Every line is commented to explain the design decision.
+
+// Module declaration for importing standard library components
+// 'use' keyword similar to Rust to bring items into scope.
+use std::collections::Map;
+use std::blockchain::{Address, msg, emit};
+
+// Struct definition for composite data types.
+// Used for simple data grouping. By default, structs are copyable if fields are copyable.
+struct UserInfo {
+    // Field 'id' of type 'u64' (unsigned 64-bit integer).
+    id: u64,
+    // Field 'is_active' of type 'bool'.
+    is_active: bool,
+}
+
+// Resource definition.
+// Resources are 'linear types' - they cannot be copied or dropped silently.
+// They must be moved or stored. Useful for tokens/NFTs.
+resource Token {
+    // The amount stored in this resource.
+    amount: u64,
+}
+
+// Event declaration.
+// Emitted to the blockchain logs for off-chain indexing.
+// 'event' keyword followed by Name and fields.
+struct TransferEvent {
+    from: Address,
+    to: Address,
+    amount: u64,
+}
+
+// Contract definition.
+// 'contract' keyword starts the main logic block.
+// Contains state, initialization, and methods.
+contract TokenSystem {
+    
+    // Storage block defines persistent state.
+    // These variables are stored in the blockchain's state trie.
+    storage {
+        // 'total_supply' is a single u64 value.
+        // Initialized to 0 by default if not set in init.
+        total_supply: u64;
+        
+        // 'balances' is a Map from Address to UserInfo struct.
+        // Maps are sparse and only exist in storage (cannot be created in memory).
+        users: Map<Address, UserInfo>;
+        
+        // A Map storing u64 balances for addresses.
+        balances: Map<Address, u64>;
+    }
+
+    // Constructor function.
+    // Named 'init'. Runs exactly once during deployment.
+    // 'initial_supply' is a parameter passed during deployment.
+    init(initial_supply: u64) {
+        // 'self' refers to the contract instance (storage).
+        // Access fields using dot notation.
+        self.total_supply = initial_supply;
+        
+        // 'msg.sender' gets the address of the deployer.
+        let deployer = msg.sender();
+        
+        // Assign initial supply to the deployer.
+        // Array-like access syntax for Maps.
+        self.balances[deployer] = initial_supply;
+    }
+
+    // Public function definition.
+    // 'pub' makes it callable from outside (transaction entry point).
+    // 'fn' keyword for function.
+    // Returns a Result type for error handling (no exceptions).
+    pub fn transfer(to: Address, amount: u64) -> Result<(), String> {
+        // Get the sender's address.
+        let sender = msg.sender();
+        
+        // Get immutable copy of sender's balance.
+        // 'let' binds a variable. Inferred type is u64.
+        let sender_balance = self.balances[sender];
+        
+        // Guard clause / Assertion.
+        // If condition fails, transaction reverts with message.
+        // 'ensure!' is a macro (syntax TBD, maybe just keywords).
+        if sender_balance < amount {
+            return Err("Insufficient funds");
+        }
+        
+        // Update state.
+        // Mutation is explicit.
+        self.balances[sender] -= amount;
+        
+        // Handle receiver balance.
+        // Map access returns default (0) if key doesn't exist.
+        self.balances[to] += amount;
+        
+        // Emit an event.
+        // Construct the struct and pass to 'emit'.
+        emit(TransferEvent {
+            from: sender,
+            to: to,
+            amount: amount,
+        });
+        
+        // Return success unit value.
+        return Ok(());
+    }
+
+    // Private helper function.
+    // No 'pub' modifier means it's internal only.
+    // Returns a Resource (Token) which MUST be handled.
+    fn mint_token(amount: u64) -> Token {
+        // Create a new Token resource.
+        // Implicit return of the last expression (Rust-style).
+        Token {
+            amount: amount,
+        }
+    }
+
+    // Function demonstrating Resource usage.
+    // Takes a resource as input (moves it in).
+    fn burn(token: Token) {
+        // Deconstruct the resource.
+        let Token { amount } = token;
+        
+        // Modify supply.
+        self.total_supply -= amount;
+        
+        // 'token' is now consumed and destroyed.
+        // Its contents were moved out.
+    }
+}
