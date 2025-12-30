@@ -1,0 +1,27 @@
+// Test ptr_write and ptr_read with intermediate variable
+
+fn sizeof<T>() -> u64 { return 8; }
+fn ptr_read<T>(ptr: u64) -> T { return ptr_read::<T>(ptr); }
+fn ptr_write<T>(ptr: u64, val: T) { }
+fn mem_alloc(size: u64) -> u64 { return 0; }
+
+struct Entry {
+    key: u64,
+    val: u64,
+    occupied: bool,
+}
+
+contract MemTest {
+    pub fn test_write_read() -> u64 {
+        let size = sizeof::<Entry>();
+        let ptr = mem_alloc(size * 4);
+        
+        let e1 = Entry { key: 10, val: 100, occupied: true };
+        ptr_write::<Entry>(ptr, e1);
+        
+        // Store in variable first
+        let e2 = ptr_read::<Entry>(ptr);
+        let result = e2.key;
+        return result;
+    }
+}

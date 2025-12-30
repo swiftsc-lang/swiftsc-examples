@@ -1,0 +1,11 @@
+struct Point {
+    x: u64,
+    y: u64
+}
+
+contract StructTest {
+    pub fn test_struct() -> u64 {
+        let p = Point { x: 10, y: 20 };
+        return p.x + p.y;
+    }
+}

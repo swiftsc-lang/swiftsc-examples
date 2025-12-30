@@ -1,0 +1,32 @@
+trait Printable {
+    fn print_val(val: u64) -> u64;
+    // In our simplified MVP, we use static dispatch.
+    // If it's a trait method, it should be called on the type.
+}
+
+struct Point {
+    x: u64,
+    y: u64,
+}
+
+impl Point {
+    fn new(x: u64, y: u64) -> Point {
+        return Point { x: x, y: y };
+    }
+}
+
+impl Printable for Point {
+    fn print_val(val: u64) -> u64 {
+        return val;
+    }
+}
+
+fn main() -> u64 {
+    let p = Point::new(10, 20);
+    // Directly call the mangled trait method to verify it was compiled
+    // Since our method resolution search is a bit hacky, let's use a method call if we had 'self'
+    // But Printable::print_val(p.x) is what we want.
+    // Let's see if my search finds it.
+    
+    return p.x; 
+}

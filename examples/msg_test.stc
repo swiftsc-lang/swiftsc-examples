@@ -1,0 +1,11 @@
+contract MsgTest {
+    storage {
+        val: u64;
+        dat: u64;
+    }
+
+    init() {
+        self.val = msg.value();
+        self.dat = msg.data();
+    }
+}

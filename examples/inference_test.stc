@@ -1,0 +1,39 @@
+struct Point {
+    x: u64,
+    y: u64
+}
+
+enum Status {
+    Active,
+    Inactive
+}
+
+contract InferenceTest {
+    pub fn test_inference() -> u64 {
+        // Inference for simple integer (default u64)
+        let a = 10;
+        let b = 20;
+        
+        // Inference for Struct
+        let p1 = Point { x: a, y: b };
+        
+        // Inference for re-assignment (p2 inheriting type Point from p1)
+        let p2 = p1; 
+        
+        // Inference for Enum
+        let s = Status::Active;
+        let s2 = s;
+
+        // Check if p2.x is resolved correctly (requires p2 to be known as Point)
+        let sum = p2.x + p2.y;
+        
+        // Check if s2 matches correctly
+        let val = match s2 {
+            Status::Active => 100,
+            Status::Inactive => 0,
+            _ => 999
+        };
+
+        return sum + val; // 30 + 100 = 130
+    }
+}

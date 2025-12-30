@@ -1,0 +1,14 @@
+// Simple library module for testing
+
+pub struct Point {
+    x: u64,
+    y: u64,
+}
+
+pub fn distance(x1: u64, y1: u64, x2: u64, y2: u64) -> u64 {
+    let dx = 0;
+    if x2 > x1 { dx = x2 - x1; } else { dx = x1 - x2; }
+    let dy = 0;
+    if y2 > y1 { dy = y2 - y1; } else { dy = y1 - y2; }
+    return dx + dy; // Manhattan distance
+}

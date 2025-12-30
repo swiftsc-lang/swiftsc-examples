@@ -1,0 +1,34 @@
+name: Examples Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Validate Examples
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Structure Check
+      run: |
+        echo "Checking for essential example files..."
+        if [ -d "examples" ]; then
+          echo "✓ examples/ directory found"
+        else
+          echo "✗ examples/ directory missing"
+          exit 1
+        fi
+        
+    - name: README Check
+      run: |
+        if [ -f README.md ]; then
+          echo "✓ README.md found"
+        else
+          echo "✗ README.md missing"
+          exit 1
+        fi

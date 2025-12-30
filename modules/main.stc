@@ -1,0 +1,15 @@
+// Test module imports
+
+use geometry::Point;
+use geometry::distance;
+
+contract ModuleTest {
+    pub fn test_import() -> u64 {
+        let p = Point { x: 10, y: 20 };
+        return p.x + p.y;
+    }
+    
+    pub fn test_function_import() -> u64 {
+        return distance(0, 0, 3, 4);
+    }
+}

@@ -1,0 +1,5 @@
+contract ErrorTest {
+    fn fail() {
+        break; // Should fail semantic check
+    }
+}

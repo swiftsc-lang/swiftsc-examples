@@ -1,0 +1,11 @@
+// Simple generic function test
+fn identity<T>(x: T) -> T {
+    return x;
+}
+
+contract GenericTest {
+    pub fn test_generic() -> u64 {
+        let a = identity(10);
+        return a;
+    }
+}

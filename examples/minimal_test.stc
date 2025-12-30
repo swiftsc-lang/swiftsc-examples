@@ -1,0 +1,16 @@
+contract Minimal {
+    storage {
+        value: u64;
+        balances: Map<Address, u64>;
+    }
+
+    init(val: u64) {
+        self.value = val;
+        let caller = msg.sender();
+        self.balances[caller] = val;
+    }
+
+    pub fn get_balance(addr: Address) -> u64 {
+        return self.balances[addr];
+    }
+}
