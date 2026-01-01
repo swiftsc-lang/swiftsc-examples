@@ -1,0 +1,193 @@
+
+/// Memory-based HashMap implementation using Intrinsics
+/// Restructured to avoid struct field access limitations
+
+// Dummy definitions for Type Checker.
+fn sizeof<T>() -> u64 { return 8; }
+fn ptr_read<T>(ptr: u64) -> T { return ptr_read::<T>(ptr); }
+fn ptr_write<T>(ptr: u64, val: T) { }
+fn mem_alloc(size: u64) -> u64 { return 0; }
+fn mem_free(ptr: u64) { }
+fn hash_i64(key: u64, seed: u64) -> u64 { return key; }
+
+// --- VecU64 ---
+struct VecU64 {
+    ptr: u64,
+    len: u64,
+    cap: u64,
+}
+
+fn vec_u64_new() -> VecU64 {
+    return VecU64 {
+        ptr: 0,
+        len: 0,
+        cap: 0,
+    };
+}
+
+fn vec_u64_len(v: VecU64) -> u64 {
+    return v.len;
+}
+
+fn vec_u64_get(v: VecU64, index: u64) -> u64 {
+    let offset = index * 8;
+    return ptr_read::<u64>(v.ptr + offset);
+}
+
+fn vec_u64_set(v: VecU64, index: u64, val: u64) {
+    let offset = index * 8;
+    ptr_write::<u64>(v.ptr + offset, val);
+}
+
+fn vec_u64_grow(v: VecU64) -> VecU64 {
+    let new_cap = 0;
+    if v.cap == 0 { new_cap = 4; } else { new_cap = v.cap * 2; }
+    
+    let size = new_cap * 8;
+    let new_ptr = mem_alloc(size);
+    
+    if v.cap > 0 {
+        let i = 0;
+        while i < v.len {
+            let val = vec_u64_get(v, i);
+            let offset = i * 8;
+            ptr_write::<u64>(new_ptr + offset, val);
+            i = i + 1;
+        }
+        mem_free(v.ptr);
+    }
+    
+    return VecU64 { ptr: new_ptr, len: v.len, cap: new_cap };
+}
+
+fn vec_u64_push(v: VecU64, val: u64) -> VecU64 {
+    let mut_v = v;
+    if mut_v.len == mut_v.cap {
+        mut_v = vec_u64_grow(mut_v);
+    }
+    let offset = mut_v.len * 8;
+    ptr_write::<u64>(mut_v.ptr + offset, val);
+    
+    return VecU64 {
+        ptr: mut_v.ptr,
+        len: mut_v.len + 1,
+        cap: mut_v.cap
+    };
+}
+
+// --- Map using separate arrays instead of Entry struct ---
+
+struct Map {
+     keys: VecU64,
+     vals: VecU64,
+     occupied: VecU64,
+     count: u64
+}
+
+fn map_new() -> Map {
+    let keys = vec_u64_new();
+    let vals = vec_u64_new();
+    let occupied = vec_u64_new();
+    
+    let i = 0;
+    while i < 8 {
+        keys = vec_u64_push(keys, 0);
+        vals = vec_u64_push(vals, 0);
+        occupied = vec_u64_push(occupied, 0);
+        i = i + 1;
+    }
+    return Map { keys: keys, vals: vals, occupied: occupied, count: 0 };
+}
+
+fn map_insert(m: Map, key: u64, val: u64) -> Map {
+    let cap = vec_u64_len(m.keys);
+    let h = hash_i64(key, 0);
+    let idx = h - (h / cap) * cap;
+    
+    let keys = m.keys;
+    let vals = m.vals;
+    let occupied = m.occupied;
+    let count = m.count;
+    
+    let start = idx;
+    while true {
+         let is_occupied = vec_u64_get(occupied, idx);
+         if is_occupied == 0 {
+             vec_u64_set(keys, idx, key);
+             vec_u64_set(vals, idx, val);
+             vec_u64_set(occupied, idx, 1);
+             count = count + 1;
+             break;
+         }
+         let existing_key = vec_u64_get(keys, idx);
+         if existing_key == key {
+             vec_u64_set(vals, idx, val);
+             break;
+         }
+         
+         idx = idx + 1;
+         if idx == cap {
+             idx = 0;
+         }
+         if idx == start {
+             break;
+         }
+    }
+    
+    return Map { keys: keys, vals: vals, occupied: occupied, count: count };
+}
+
+fn map_get(m: Map, key: u64) -> u64 {
+    let cap = vec_u64_len(m.keys);
+    let h = hash_i64(key, 0);
+    let idx = h - (h / cap) * cap;
+    let start = idx;
+    while true {
+        let is_occupied = vec_u64_get(m.occupied, idx);
+        if is_occupied == 0 {
+            break;
+        }
+        let existing_key = vec_u64_get(m.keys, idx);
+        if existing_key == key {
+            return vec_u64_get(m.vals, idx);
+        }
+         idx = idx + 1;
+         if idx == cap {
+             idx = 0;
+         }
+         if idx == start { break; }
+    }
+    return 0; 
+}
+
+contract HashMapTest {
+    pub fn test_vec() -> u64 {
+        let v = vec_u64_new();
+        let i = 0;
+        while i < 100 {
+            v = vec_u64_push(v, i);
+            i = i + 1;
+        }
+        
+        return vec_u64_get(v, 50); // Should be 50
+    }
+    
+    pub fn test_map() -> u64 {
+        let m = map_new();
+        m = map_insert(m, 10, 100);
+        m = map_insert(m, 20, 200);
+        m = map_insert(m, 30, 300);
+        
+        return map_get(m, 20); // Should be 200
+    }
+    
+     pub fn run_tests() -> bool {
+        if self.test_vec() != 50 {
+           return false;
+        }
+        if self.test_map() != 200 {
+           return false;
+        }
+        return true;
+    }
+}

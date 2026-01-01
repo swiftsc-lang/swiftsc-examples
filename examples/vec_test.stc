@@ -1,0 +1,27 @@
+/// Test for Vec<T> and generic structs
+
+struct Vec<T> {
+    ptr: u64,
+    len: u64,
+    cap: u64,
+}
+
+impl<T> Vec<T> {
+    pub fn new() -> Vec<T> {
+        return Vec::<T> {
+            ptr: 0,
+            len: 0,
+            cap: 0,
+        };
+    }
+}
+
+contract VecTest {
+    storage {
+        my_vec: Vec<u64>;
+    }
+
+    pub fn test() {
+        let v = Vec::<u64>::new();
+    }
+}

@@ -1,0 +1,20 @@
+enum Status {
+    Inactive,
+    Active,
+    Pending
+}
+
+contract EnumTest {
+    pub fn test_enum() -> u64 {
+        let s = Status::Active;
+        
+        let val = match s {
+            Status::Inactive => 0,
+            Status::Active => 100,
+            Status::Pending => 200,
+            _ => 999
+        };
+        
+        return val;
+    }
+}

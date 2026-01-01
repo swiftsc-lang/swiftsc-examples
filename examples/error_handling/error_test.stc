@@ -1,0 +1,14 @@
+fn check_balance(balance: u64, amount: u64) -> Result<u64, String> {
+    if balance < amount {
+        return Err("Insufficient balance");
+    }
+    return Ok(balance - amount);
+}
+
+contract Bank {
+    pub fn withdraw(balance: u64, amount: u64) -> Result<u64, String> {
+        // The ? operator returns early if check_balance returns Err
+        let new_balance = check_balance(balance, amount)?;
+        return Ok(new_balance);
+    }
+}

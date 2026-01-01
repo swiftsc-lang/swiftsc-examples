@@ -1,0 +1,26 @@
+contract StringTest {
+    storage {
+        message: String;
+    }
+
+
+    init() {
+        let greeting = "Hello";
+        let space = ", ";
+        let name = "SwiftSC!";
+        let full = greeting + space + name;
+        self.message = full;
+    }
+
+    pub fn get_message() -> String {
+        return self.message;
+    }
+
+    pub fn get_length() -> u64 {
+        return self.message.len();
+    }
+
+    pub fn is_message_empty() -> bool {
+        return self.message.is_empty();
+    }
+}

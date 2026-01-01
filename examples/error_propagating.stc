@@ -1,0 +1,22 @@
+// Test error handling ergonomics
+
+contract ErrorTest {
+    pub fn fail_if_zero(val: u64) -> Result<u64, u64> {
+        if val == 0 {
+            return Err(99);
+        }
+        return Ok(val);
+    }
+
+    pub fn test_try_ok() -> Result<u64, u64> {
+        let x = self.fail_if_zero(10)?;
+        let y = self.fail_if_zero(20)?;
+        return Ok(x + y);
+    }
+
+    pub fn test_try_fail() -> Result<u64, u64> {
+        let x = self.fail_if_zero(10)?;
+        let y = self.fail_if_zero(0)?; // Should return early here
+        return Ok(x + y);
+    }
+}

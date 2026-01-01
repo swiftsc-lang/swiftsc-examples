@@ -1,0 +1,5 @@
+fn main() -> u64 {
+    let f = |x: u64| { return x + 1; };
+    let res = f(10);
+    return res;
+}

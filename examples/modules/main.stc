@@ -1,0 +1,8 @@
+use math::add;
+
+contract Main {
+    pub fn test() -> Result<u64, String> {
+        let val = add(10, 20);
+        return Ok(val);
+    }
+}

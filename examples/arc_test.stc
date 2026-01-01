@@ -1,0 +1,77 @@
+contract ArcTest {
+    storage {
+        status: u64;
+    }
+
+    init() {
+        self.status = 0;
+    }
+    
+    fn set_fail(code: u64) {
+        self.status = code;
+    }
+
+    pub fn test_basic() {
+        let s = "A";
+        // RC = 2 (1 alloc + 1 retain)
+        if s.get_rc() != 2 {
+            self.set_fail(1);
+        }
+
+        let s2 = s;
+        // RC = 3 (2 + 1 retain)
+        if s.get_rc() != 3 {
+             self.set_fail(2);
+        }
+    }
+    
+    pub fn test_scope() {
+        let s = "B"; // 2
+        if true {
+            let x = s; // 3
+            if s.get_rc() != 3 { self.set_fail(3); }
+        }
+        // x released. RC 2.
+        if s.get_rc() != 2 { self.set_fail(4); }
+    }
+    
+    fn helper(x: String) {
+        // Param x.
+        // Passed as retained. RC = Caller + 1.
+        // Caller had 2. Passed 2+1 = 3.
+        if x.get_rc() != 3 { self.set_fail(5); }
+    }
+    
+    pub fn test_func() {
+        let s = "C"; // 2
+        self.helper(s);
+        // helper returned. Callee Released x.
+        // RC = 2.
+        if s.get_rc() != 2 { self.set_fail(6); }
+    }
+    
+    pub fn test_return() {
+        let r = self.ret_helper("D");
+        // "D" RC=1 (Struct).
+        // Pass "D". Stack 1. Retain -> RC 2.
+        // Call ret_helper. Arg x has RC 2.
+        // Returns x.
+        // ret_helper logic:
+        // Returns ptr. Release x (RC->1).
+        // Result is ptr (RC=1).
+        // Assign to r. Retain r. RC=2.
+        if r.get_rc() != 2 { self.set_fail(7); }
+    }
+    
+    fn ret_helper(x: String) -> String {
+        // x RC=2.
+        x
+    }
+
+    pub fn run_tests() {
+        self.test_basic();
+        self.test_scope();
+        self.test_func();
+        self.test_return();
+    }
+}

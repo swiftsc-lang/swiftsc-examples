@@ -1,0 +1,30 @@
+contract ControlFlowTest {
+    pub fn test_if_else(x: u64) -> u64 {
+        if x > 10 {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    pub fn test_while(n: u64) -> u64 {
+        let mut i: u64 = 0;
+        let mut sum: u64 = 0;
+        while i < n {
+            sum = sum + i;
+            i = i + 1;
+            if i == 5 {
+                break;
+            }
+        }
+        return sum;
+    }
+
+    pub fn test_for(n: u64) -> u64 {
+        let mut sum: u64 = 0;
+        for i in 0..n {
+            sum = sum + i;
+        }
+        return sum;
+    }
+}
