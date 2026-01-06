@@ -1,0 +1,47 @@
+use std::math::sub;
+use std::math::add;
+use std::collections::Map;
+
+contract BasicVault {
+    storage balances: Map<u64>;
+    storage total_supply: u64;
+
+    fn deposit(amount: u64) -> Result<()> {
+        let sender = msg.sender();
+        
+        // Use Map from stdlib
+        let current_bal = self.balances.get(sender).unwrap_or(0);
+        
+        // SafeMath from stdlib
+        let new_bal = add(current_bal, amount)?;
+        let new_total = add(self.total_supply, amount)?;
+
+        self.balances.insert(sender, new_bal);
+        self.total_supply = new_total;
+        
+        // Host logging
+        log_i64(new_bal);
+        
+        Ok(())
+    }
+
+    fn withdraw(amount: u64) -> Result<()> {
+        let sender = msg.sender();
+        let current_bal = self.balances.get(sender).unwrap_or(0);
+        
+        // Prevent underflow with SafeMath
+        let new_bal = sub(current_bal, amount)?;
+        let new_total = sub(self.total_supply, amount)?;
+
+        self.balances.insert(sender, new_bal);
+        self.total_supply = new_total;
+        
+        log_i64(new_bal);
+        
+        Ok(())
+    }
+
+    pub fn get_balance(user: Address) -> u64 {
+        return self.balances.get(user).unwrap_or(0);
+    }
+}
