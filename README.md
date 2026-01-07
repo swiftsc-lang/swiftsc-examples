@@ -1,6 +1,6 @@
 # SwiftSC Examples
 
-A collection of example smart contracts demonstrating the features of SwiftSC V1.0.2-beta.
+A collection of example smart contracts demonstrating the features of SwiftSC V1.0.3-beta.
 
 ## 📦 Categories
 
